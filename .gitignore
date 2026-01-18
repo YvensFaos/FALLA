@@ -1,0 +1,11 @@
+[Bb]in/
+[Ob]j/
+.vs/
+.idea/
+.vscode/
+*.user
+*.userprefs
+*.suo
+.DS_Store
+Thumbs.db
+/[Aa]ssets/Editor\ Default\ Resources/FMODStudioCache.asset*
