@@ -26,7 +26,7 @@ namespace FALLA
 
         private void Start()
         {
-            _llm = LLmFactory.CreateLlm(LlmType.Gemini, apiKey);
+            _llm = LLmFactory.CreateLlm(llmType, apiKey);
             _ready = false;
             _response = "";
         }
