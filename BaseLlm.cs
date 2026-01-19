@@ -23,6 +23,8 @@ namespace FALLA
         protected int MaxOutputTokens { get; }
         protected List<string> StopSequences { get; }
 
+        private List<string> _thinkingCache;
+
         protected BaseLlm(string apiKey, string apiUrl, string model, float temperature = 0.2f, int topK = 40,
             int topP = 1, int maxOutputTokens = 2048)
         {
@@ -41,6 +43,25 @@ namespace FALLA
         public void AddStopSequence(string sequence)
         {
             StopSequences.Add(sequence);
+        }
+
+        protected void ClearThinkingCache()
+        {
+            _thinkingCache = new List<string>();
+        }
+
+        protected void AddToThinkingCache(string sequence)
+        {
+            _thinkingCache.Add(sequence);
+        }
+
+        /// <summary>
+        /// Returns the last cached thinking messages compiled from the last request.
+        /// </summary>
+        /// <returns></returns>
+        public List<string> GetThinkingCache()
+        {
+            return _thinkingCache;
         }
     }
 }

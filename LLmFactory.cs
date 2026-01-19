@@ -18,6 +18,7 @@ namespace FALLA
             return type switch
             {
                 LlmType.Gemini => new GeminiLlm(apiKey),
+                LlmType.Mistral => new MistralLlm(apiKey),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
         }

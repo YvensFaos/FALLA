@@ -13,8 +13,8 @@ namespace FALLA.Exception
     public class NoResponseException : System.Exception
     {
         private UnityWebRequest _request;
-        private string _error;
-        private string _downloadHandlerText;
+        private readonly string _error;
+        private readonly string _downloadHandlerText;
 
         public NoResponseException(UnityWebRequest request, string error, string downloadHandlerText)
         {
@@ -22,5 +22,7 @@ namespace FALLA.Exception
             _error = error;
             _downloadHandlerText = downloadHandlerText;
         }
+
+        public override string Message => $"Error: {_error}. Download Handler Text: {_downloadHandlerText}.";
     }
 }

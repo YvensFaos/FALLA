@@ -7,6 +7,9 @@
  */
 
 using System.Collections;
+using System.Collections.Generic;
+using FALLA.Exception;
+using FALLA.Helper;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -14,11 +17,15 @@ namespace FALLA
 {
     public class LlmCallerObject : MonoBehaviour
     {
-        [Header("API Configuration")] [SerializeField]
-        private string apiKey = "YOUR_API_KEY";
+        [Header("API Configuration")] 
+        [SerializeField]
+        private string apiKeyFile;
 
-        [Header("Llm Settings")] [SerializeField]
+        [Header("Llm Settings")] 
+        [SerializeField]
         private LlmType llmType;
+        [SerializeField] 
+        private List<LlmTypeKeyPair> llmTypeKeyPairs;
 
         private BaseLlm _llm;
         private bool _ready;
@@ -26,7 +33,13 @@ namespace FALLA
 
         private void Start()
         {
-            _llm = LLmFactory.CreateLlm(llmType, apiKey);
+            var llmKeyPair = llmTypeKeyPairs.Find((pair) => pair.type == llmType);
+            var keyValue = JsonFileReader.GetValueFromValuePairJson(apiKeyFile, llmKeyPair.key);
+            if (string.IsNullOrEmpty(keyValue))
+            {
+                throw new LlmKeyNotFoundException(apiKeyFile, llmType, llmKeyPair.key);
+            }
+            _llm = LLmFactory.CreateLlm(llmType, keyValue);
             _ready = false;
             _response = "";
         }
@@ -65,6 +78,7 @@ namespace FALLA
             catch (System.Exception e)
             {
                 Debug.LogError(e);
+                Debug.LogError(e.Message);
             }
         }
 

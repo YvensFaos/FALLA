@@ -12,13 +12,15 @@ namespace FALLA.Exception
 {
     public class NoCandidateException : System.Exception
     {
-        private UnityWebRequest _request;
-        private string _responseText;
+        private readonly UnityWebRequest _request;
+        private readonly string _responseText;
 
         public NoCandidateException(UnityWebRequest request, string responseText)
         {
             _request = request;
             _responseText = responseText;
         }
+        
+        public override string Message => $"Error: No Candidate. Request: {_request}. Response Text: {_responseText}.";
     }
 }

@@ -6,10 +6,14 @@
  * or see the LICENSE file in the root directory of this repository.
  */
 
+using System;
+
 namespace FALLA
 {
-    public enum LlmType
+    [Serializable]
+    public struct LlmTypeKeyPair
     {
-        Gemini, Mistral
+        public LlmType type;
+        public string key;
     }
 }
