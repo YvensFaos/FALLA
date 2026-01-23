@@ -26,7 +26,7 @@ namespace FALLA
         private List<string> _thinkingCache;
 
         protected BaseLlm(string apiKey, string apiUrl, string model, float temperature = 0.2f, int topK = 40,
-            int topP = 1, int maxOutputTokens = 2048)
+            int topP = 1, int maxOutputTokens = 4096)
         {
             APIKey = apiKey;
             APIUrl = apiUrl;
