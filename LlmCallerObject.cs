@@ -73,12 +73,15 @@ namespace FALLA
             try
             {
                 _response = await _llm.SendRequest(prompt);
-                _ready = true;
             }
             catch (System.Exception e)
             {
                 Debug.LogError(e);
                 Debug.LogError(e.Message);
+            }
+            finally
+            {
+                _ready = true;
             }
         }
 
