@@ -110,8 +110,12 @@ namespace FALLA.Implementation
             }
 
             var responseText = request.downloadHandler.text;
+            
             var response = JsonConvert.DeserializeObject<MistralResponse>(responseText);
-            if (response.choices is not { Count: > 0 } && response.choices[0].Message != null) return responseText;
+            if (response.choices is not { Count: > 0 } && response.choices[0].Message != null)
+            {
+                throw new NoCandidateException(request, responseText);
+            }
 
             var mistralMessage = response.choices[0].Message;
             if (mistralMessage == null)
