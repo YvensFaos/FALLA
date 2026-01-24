@@ -87,5 +87,6 @@ namespace FALLA
 
         public bool IsReady() => _ready;
         public string GetResponse() => _response;
+        public LlmType GetLlmType() => llmType;
     }
 }
