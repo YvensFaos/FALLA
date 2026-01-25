@@ -59,7 +59,7 @@ namespace FALLA
         public void CallLlmWithCallback(string prompt, UnityAction<string> callback)
         {
             CallLlm(prompt);
-            StartCoroutine(CallLlmCoroutine(callback));
+            StartCoroutine(CallLlmCoroutine(callback));    
         }
 
         private IEnumerator CallLlmCoroutine(UnityAction<string> callback)
@@ -70,19 +70,8 @@ namespace FALLA
 
         private async void SubmitAsync(string prompt)
         {
-            try
-            {
-                _response = await _llm.SendRequest(prompt);
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError(e);
-                Debug.LogError(e.Message);
-            }
-            finally
-            {
-                _ready = true;
-            }
+            _response = await _llm.SendRequest(prompt);
+            _ready = true;
         }
 
         public bool IsReady() => _ready;
