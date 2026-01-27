@@ -23,5 +23,16 @@ namespace FALLA
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
         }
+        
+        public static BaseLlm CreateLlm(LlmType type, string apiKey, string model)
+        {
+            return type switch
+            {
+                LlmType.Gemini => new GeminiLlm(apiKey, model),
+                LlmType.Mistral => new MistralLlm(apiKey, model),
+                LlmType.DeepSeek => new DeepSeekLlm(apiKey, model),
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+            };
+        }
     }
 }

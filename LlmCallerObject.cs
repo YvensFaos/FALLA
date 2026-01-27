@@ -25,6 +25,8 @@ namespace FALLA
         [SerializeField]
         private LlmType llmType;
         [SerializeField] 
+        private string llmModel;
+        [SerializeField] 
         private List<LlmTypeKeyPair> llmTypeKeyPairs;
 
         private BaseLlm _llm;
@@ -39,7 +41,9 @@ namespace FALLA
             {
                 throw new LlmKeyNotFoundException(apiKeyFile, llmType, llmKeyPair.key);
             }
-            _llm = LLmFactory.CreateLlm(llmType, keyValue);
+
+            _llm = string.IsNullOrEmpty(llmModel) ? LLmFactory.CreateLlm(llmType, keyValue) : LLmFactory.CreateLlm(llmType, keyValue, llmModel);
+            
             _ready = false;
             _response = "";
         }
