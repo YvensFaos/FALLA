@@ -19,6 +19,7 @@ namespace FALLA
             {
                 LlmType.Gemini => new GeminiLlm(apiKey),
                 LlmType.Mistral => new MistralLlm(apiKey),
+                LlmType.DeepSeek => new DeepSeekLlm(apiKey),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
         }
