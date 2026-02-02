@@ -8,14 +8,14 @@ using UnityEngine.Networking;
 namespace FALLA.Implementation
 {
     [Serializable]
-    public class ClaudeMessage
+    internal class ClaudeMessage
     {
         public string role;
         public string content;
     }
 
     [Serializable]
-    public class ClaudeRequest
+    internal class ClaudeRequest
     {
         public string model;
         [JsonProperty("max_tokens")] public int maxTokens;
@@ -23,14 +23,14 @@ namespace FALLA.Implementation
     }
 
     [Serializable]
-    public class ClaudeContent
+    internal class ClaudeContent
     {
         public string type;
         public string text;
     }
 
     [Serializable]
-    public class ClaudeResponse
+    internal class ClaudeResponse
     {
         public string id;
         public string type;

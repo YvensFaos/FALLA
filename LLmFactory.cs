@@ -21,6 +21,7 @@ namespace FALLA
                 LlmType.Mistral => new MistralLlm(apiKey),
                 LlmType.DeepSeek => new DeepSeekLlm(apiKey),
                 LlmType.Claude => new ClaudeLlm(apiKey),
+                LlmType.GPT => new GptLlm(apiKey),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
         }
@@ -33,6 +34,7 @@ namespace FALLA
                 LlmType.Mistral => new MistralLlm(apiKey, model),
                 LlmType.DeepSeek => new DeepSeekLlm(apiKey, model),
                 LlmType.Claude => new ClaudeLlm(apiKey, model),
+                LlmType.GPT => new GptLlm(apiKey, model),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
         }
