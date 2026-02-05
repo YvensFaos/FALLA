@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2026 Yvens R Serpa [https://github.com/YvensFaos/]
- * 
+ *
  * This work is licensed under the Creative Commons Attribution 4.0 International License.
  * To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/
  * or see the LICENSE file in the root directory of this repository.
@@ -17,23 +17,29 @@ namespace FALLA
 {
     public class LlmCallerObject : MonoBehaviour
     {
-        [Header("API Configuration")] 
-        [SerializeField]
+        [Header("API Configuration")] [SerializeField]
         private string apiKeyFile;
 
-        [Header("Llm Settings")] 
-        [SerializeField]
+        [Header("Llm Settings")] [SerializeField]
         private LlmType llmType;
-        [SerializeField] 
-        private string llmModel;
-        [SerializeField] 
-        private List<LlmTypeKeyPair> llmTypeKeyPairs;
+
+        [SerializeField] private string llmModel;
+        [SerializeField] private List<LlmTypeKeyPair> llmTypeKeyPairs;
 
         private BaseLlm _llm;
         private bool _ready;
         private string _response;
 
         private void Awake()
+        {
+            LoadModel(llmModel);
+            llmModel = _llm.Model;
+
+            _ready = false;
+            _response = "";
+        }
+
+        public void LoadModel(string newModel)
         {
             var llmKeyPair = llmTypeKeyPairs.Find((pair) => pair.type == llmType);
             var keyValue = JsonFileReader.GetValueFromValuePairJson(apiKeyFile, llmKeyPair.key);
@@ -42,11 +48,10 @@ namespace FALLA
                 throw new LlmKeyNotFoundException(apiKeyFile, llmType, llmKeyPair.key);
             }
 
-            _llm = string.IsNullOrEmpty(llmModel) ? LLmFactory.CreateLlm(llmType, keyValue) : LLmFactory.CreateLlm(llmType, keyValue, llmModel);
-            llmModel = _llm.Model;
-            
-            _ready = false;
-            _response = "";
+            llmModel = newModel;
+            _llm = string.IsNullOrEmpty(llmModel)
+                ? LLmFactory.CreateLlm(llmType, keyValue)
+                : LLmFactory.CreateLlm(llmType, keyValue, llmModel);
         }
 
         public void CallLlm(string prompt)
@@ -58,13 +63,20 @@ namespace FALLA
 
             _ready = false;
             _response = "";
-            SubmitAsync(prompt);
+            try
+            {
+                SubmitAsync(prompt);
+            }
+            catch (System.Exception e)
+            {
+                throw;
+            }
         }
 
         public void CallLlmWithCallback(string prompt, UnityAction<string> callback)
         {
             CallLlm(prompt);
-            StartCoroutine(CallLlmCoroutine(callback));    
+            StartCoroutine(CallLlmCoroutine(callback));
         }
 
         private IEnumerator CallLlmCoroutine(UnityAction<string> callback)
@@ -75,7 +87,15 @@ namespace FALLA
 
         private async void SubmitAsync(string prompt)
         {
-            _response = await _llm.SendRequest(prompt);
+            try
+            {
+                _response = await _llm.SendRequest(prompt);
+            }
+            catch (NoResponseException e)
+            {
+                throw;
+            }
+
             _ready = true;
         }
 
@@ -83,5 +103,10 @@ namespace FALLA
         public string GetResponse() => _response;
         public LlmType GetLlmType() => llmType;
         public string GetLlmModel() => llmModel;
+
+        public override string ToString()
+        {
+            return $"{llmType}|{llmModel}";
+        }
     }
 }
