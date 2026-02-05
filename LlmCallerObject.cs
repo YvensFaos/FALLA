@@ -33,7 +33,7 @@ namespace FALLA
         private bool _ready;
         private string _response;
 
-        private void Start()
+        private void Awake()
         {
             var llmKeyPair = llmTypeKeyPairs.Find((pair) => pair.type == llmType);
             var keyValue = JsonFileReader.GetValueFromValuePairJson(apiKeyFile, llmKeyPair.key);
@@ -43,6 +43,7 @@ namespace FALLA
             }
 
             _llm = string.IsNullOrEmpty(llmModel) ? LLmFactory.CreateLlm(llmType, keyValue) : LLmFactory.CreateLlm(llmType, keyValue, llmModel);
+            llmModel = _llm.Model;
             
             _ready = false;
             _response = "";
