@@ -55,6 +55,7 @@ namespace FALLA
             {
                 await request.SendWebRequest();
                 if (request.result == UnityWebRequest.Result.Success) continue;
+                request.Dispose();
                 retry = true;
                 await Task.Delay(timer);
                 request = webRequestDelegate.Invoke();
@@ -64,7 +65,9 @@ namespace FALLA
             {
                 throw new NoResponseException(request, request.error, request.downloadHandler.text);
             }
-            return request.downloadHandler.text;
+            var response = request.downloadHandler.text;
+            request.Dispose();
+            return response;
         }
 
         public void AddStopSequence(string sequence)
