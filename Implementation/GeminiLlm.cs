@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FALLA.Exception;
 using Newtonsoft.Json;
-using UnityEngine;
 using UnityEngine.Networking;
 
 namespace FALLA.Implementation
@@ -117,25 +116,22 @@ namespace FALLA.Implementation
                     stopSequences = StopSequences.Count > 0 ? StopSequences : null
                 }
             };
-
-            var jsonPayload = JsonConvert.SerializeObject(requestData);
-            using var request = new UnityWebRequest(_url, "POST");
-            var bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
-
-            await request.SendWebRequest();
-            if (request.result != UnityWebRequest.Result.Success)
+            
+            var result = await AttemptRequest(() =>
             {
-                throw new NoResponseException(request, request.error, request.downloadHandler.text);
-            }
-
-            var responseText = request.downloadHandler.text;
-            var response = JsonConvert.DeserializeObject<GeminiResponse>(responseText);
+                var request = new UnityWebRequest(_url, "POST");
+                var jsonPayload = JsonConvert.SerializeObject(requestData);
+                var bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
+                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.SetRequestHeader("Content-Type", "application/json");
+                return request;
+            });
+            var response = JsonConvert.DeserializeObject<GeminiResponse>(result);
             if (response?.candidates == null || response.candidates.Count == 0)
             {
-                throw new NoCandidateException(request, responseText);
+                // throw new NoCandidateException(null, responseText);
+                return null;
             }
 
             var generatedText = response.candidates[0].content.parts[0].text;

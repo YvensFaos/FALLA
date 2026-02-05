@@ -1,9 +1,15 @@
+/*
+ * Copyright (c) 2026 Yvens R Serpa [https://github.com/YvensFaos/]
+ *
+ * This work is licensed under the Creative Commons Attribution 4.0 International License.
+ * To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/
+ * or see the LICENSE file in the root directory of this repository.
+ */
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using FALLA.Exception;
 using Newtonsoft.Json;
-using UnityEngine;
 using UnityEngine.Networking;
 
 namespace FALLA.Implementation
@@ -132,26 +138,21 @@ namespace FALLA.Implementation
                 stream = false
             };
 
-            var jsonBody = JsonConvert.SerializeObject(requestBody);
-            using var request = new UnityWebRequest(APIUrl, "POST");
-            request.SetRequestHeader("Authorization", "Bearer " + APIKey);
-            request.SetRequestHeader("Content-Type", "application/json");
-
-            var bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = new DownloadHandlerBuffer();
-
-            await request.SendWebRequest();
-            if (request.result != UnityWebRequest.Result.Success)
+            var result = await AttemptRequest(() =>
             {
-                throw new NoResponseException(request, request.error, request.downloadHandler.text);
-            }
+                var request = new UnityWebRequest(APIUrl, "POST");
+                var jsonBody = JsonConvert.SerializeObject(requestBody);
+                request.SetRequestHeader("Authorization", "Bearer " + APIKey);
+                request.SetRequestHeader("Content-Type", "application/json");
+                var bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
+                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                request.downloadHandler = new DownloadHandlerBuffer();
+                return request;
+            });
 
-            var responseText = request.downloadHandler.text;
-
-            var response = JsonConvert.DeserializeObject<DeepSeekResponse>(responseText);
+            var response = JsonConvert.DeserializeObject<DeepSeekResponse>(result);
             var deepSeekContentResult = "";
-            
+
             ClearThinkingCache();
             if (response is { Choices: { Count: > 0 } })
             {
@@ -163,7 +164,8 @@ namespace FALLA.Implementation
             }
             else
             {
-                throw new NoResponseException(request, request.error, request.downloadHandler.text);
+                // throw new NoResponseException(request, request.error, request.downloadHandler.text);
+                return null;
             }
 
             return deepSeekContentResult;

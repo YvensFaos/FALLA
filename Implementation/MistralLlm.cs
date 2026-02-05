@@ -1,9 +1,15 @@
+/*
+ * Copyright (c) 2026 Yvens R Serpa [https://github.com/YvensFaos/]
+ *
+ * This work is licensed under the Creative Commons Attribution 4.0 International License.
+ * To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/
+ * or see the LICENSE file in the root directory of this repository.
+ */
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using FALLA.Exception;
 using Newtonsoft.Json;
-using UnityEngine;
 using UnityEngine.Networking;
 
 namespace FALLA.Implementation
@@ -14,45 +20,37 @@ namespace FALLA.Implementation
         public string id { get; set; }
         public long created { get; set; }
         public string model { get; set; }
-        [JsonProperty("usage")]
-        public MistralUsage MistralUsage { get; set; }
-        [JsonProperty("object")]
-        public string @object { get; set; }
+        [JsonProperty("usage")] public MistralUsage MistralUsage { get; set; }
+        [JsonProperty("object")] public string @object { get; set; }
         public List<MistralChoice> choices { get; set; }
     }
 
     [Serializable]
     public class MistralUsage
     {
-        [JsonProperty("prompt_tokens")]
-        public int PromptTokens { get; set; }
+        [JsonProperty("prompt_tokens")] public int PromptTokens { get; set; }
 
-        [JsonProperty("total_tokens")]
-        public int TotalTokens { get; set; }
+        [JsonProperty("total_tokens")] public int TotalTokens { get; set; }
 
-        [JsonProperty("completion_tokens")]
-        public int CompletionTokens { get; set; }
+        [JsonProperty("completion_tokens")] public int CompletionTokens { get; set; }
     }
 
     [Serializable]
     public class MistralChoice
     {
         public int index { get; set; }
-        [JsonProperty("finish_reason")]
-        public string FinishReason { get; set; }
+        [JsonProperty("finish_reason")] public string FinishReason { get; set; }
 
-        [JsonProperty("message")]
-        public MistralMessage Message { get; set; }
+        [JsonProperty("message")] public MistralMessage Message { get; set; }
     }
 
     [Serializable]
     public class MistralMessage
     {
         public string role { get; set; }
-        
-        [JsonProperty("tool_calls")]
-        public object ToolCalls { get; set; }
-        
+
+        [JsonProperty("tool_calls")] public object ToolCalls { get; set; }
+
         public List<MistralContent> content { get; set; }
     }
 
@@ -60,13 +58,12 @@ namespace FALLA.Implementation
     public class MistralContent
     {
         public string type { get; set; }
-        
-        [JsonProperty("text")]
-        public string Text { get; set; }
-        
+
+        [JsonProperty("text")] public string Text { get; set; }
+
         public List<MistralThinkingItem> thinking { get; set; }
     }
-    
+
     [Serializable]
     public class MistralThinkingItem
     {
@@ -94,32 +91,30 @@ namespace FALLA.Implementation
                 max_tokens = MaxOutputTokens
             };
 
-            var jsonBody = JsonConvert.SerializeObject(requestBody);
-            using var request = new UnityWebRequest(APIUrl, "POST");
-            request.SetRequestHeader("Authorization", "Bearer " + APIKey);
-            request.SetRequestHeader("Content-Type", "application/json");
-            var bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = new DownloadHandlerBuffer();
-
-            await request.SendWebRequest();
-            if (request.result != UnityWebRequest.Result.Success)
+            var result = await AttemptRequest(() =>
             {
-                throw new NoResponseException(request, request.error, request.downloadHandler.text);
-            }
+                var request = new UnityWebRequest(APIUrl, "POST");
+                var jsonBody = JsonConvert.SerializeObject(requestBody);
+                request.SetRequestHeader("Authorization", "Bearer " + APIKey);
+                request.SetRequestHeader("Content-Type", "application/json");
+                var bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
+                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                request.downloadHandler = new DownloadHandlerBuffer();
+                return request;
+            });
 
-            var responseText = request.downloadHandler.text;
-            
-            var response = JsonConvert.DeserializeObject<MistralResponse>(responseText);
+            var response = JsonConvert.DeserializeObject<MistralResponse>(result);
             if (response.choices is not { Count: > 0 } && response.choices[0].Message != null)
             {
-                throw new NoCandidateException(request, responseText);
+                // throw new NoCandidateException(request, responseText);
+                return null;
             }
 
             var mistralMessage = response.choices[0].Message;
             if (mistralMessage == null)
             {
-                throw new NoCandidateException(request, responseText);
+                // throw new NoCandidateException(request, responseText);
+                return null;
             }
 
             var mistralContentResult = "";
@@ -137,6 +132,7 @@ namespace FALLA.Implementation
                         {
                             AddToThinkingCache(thinkingItem.text);
                         }
+
                         break;
                     }
                 }

@@ -8,6 +8,10 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FALLA.Exception;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.Networking;
 
 namespace FALLA
 {
@@ -15,7 +19,8 @@ namespace FALLA
     {
         protected readonly string APIKey;
         protected readonly string APIUrl;
-
+        protected delegate UnityWebRequest WebRequestDelegate();
+        
         public string Model { get; set; }
         protected float Temperature { get; set; }
         protected int TopK { get; set; }
@@ -39,6 +44,28 @@ namespace FALLA
         }
 
         public abstract Task<string> SendRequest(string content);
+        
+        protected static async Task<string> AttemptRequest(WebRequestDelegate webRequestDelegate)
+        {
+            var retry = false;
+            var attempts = 5;
+            const int timer = 40000;
+            var request = webRequestDelegate.Invoke();
+            do
+            {
+                await request.SendWebRequest();
+                if (request.result == UnityWebRequest.Result.Success) continue;
+                retry = true;
+                await Task.Delay(timer);
+                request = webRequestDelegate.Invoke();
+            } while (retry && --attempts >= 0);
+
+            if (attempts <= 0 || request.result != UnityWebRequest.Result.Success)
+            {
+                throw new NoResponseException(request, request.error, request.downloadHandler.text);
+            }
+            return request.downloadHandler.text;
+        }
 
         public void AddStopSequence(string sequence)
         {
