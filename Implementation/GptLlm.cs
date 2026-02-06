@@ -80,7 +80,7 @@ namespace FALLA.Implementation
         {
         }
 
-        public override async Task<string> SendRequest(string content)
+        public override async Task<LlmGenericResponse> SendRequest(string content)
         {
             var requestBody = new
             {
@@ -94,7 +94,7 @@ namespace FALLA.Implementation
                 stream = false
             };
 
-            var result = await AttemptRequest(() =>
+            var llmGenericResponse = await AttemptRequest(() =>
             {
                 var request = new UnityWebRequest(APIUrl, "POST");
                 var jsonBody = JsonConvert.SerializeObject(requestBody);
@@ -105,7 +105,13 @@ namespace FALLA.Implementation
                 request.downloadHandler = new DownloadHandlerBuffer();
                 return request;
             });
-            var response = JsonConvert.DeserializeObject<GptResponse>(result);
+
+            if (!llmGenericResponse.success)
+            {
+                return llmGenericResponse;
+            }
+
+            var response = JsonConvert.DeserializeObject<GptResponse>(llmGenericResponse.response);
             var gptContentResult = "";
 
             ClearThinkingCache();
@@ -116,11 +122,10 @@ namespace FALLA.Implementation
             }
             else
             {
-                // throw new NoResponseException(request, request.error, request.downloadHandler.text);
-                return null;
+                return new LlmGenericResponse(llmGenericResponse.response, 0, false);
             }
 
-            return gptContentResult;
+            return new LlmGenericResponse(gptContentResult, 0, true);
         }
     }
 }

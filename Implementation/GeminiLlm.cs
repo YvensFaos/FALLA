@@ -96,7 +96,7 @@ namespace FALLA.Implementation
         /// <returns></returns>
         /// <exception cref="NoResponseException"></exception>
         /// <exception cref="NoCandidateException"></exception>
-        public override async Task<string> SendRequest(string content)
+        public override async Task<LlmGenericResponse> SendRequest(string content)
         {
             var requestData = new GeminiRequest
             {
@@ -116,8 +116,8 @@ namespace FALLA.Implementation
                     stopSequences = StopSequences.Count > 0 ? StopSequences : null
                 }
             };
-            
-            var result = await AttemptRequest(() =>
+
+            var llmGenericResponse = await AttemptRequest(() =>
             {
                 var request = new UnityWebRequest(_url, "POST");
                 var jsonPayload = JsonConvert.SerializeObject(requestData);
@@ -127,15 +127,20 @@ namespace FALLA.Implementation
                 request.SetRequestHeader("Content-Type", "application/json");
                 return request;
             });
-            var response = JsonConvert.DeserializeObject<GeminiResponse>(result);
+
+            if (!llmGenericResponse.success)
+            {
+                return llmGenericResponse;
+            }
+
+            var response = JsonConvert.DeserializeObject<GeminiResponse>(llmGenericResponse.response);
             if (response?.candidates == null || response.candidates.Count == 0)
             {
-                // throw new NoCandidateException(null, responseText);
-                return null;
+                return new LlmGenericResponse(llmGenericResponse.response, 0, false);
             }
 
             var generatedText = response.candidates[0].content.parts[0].text;
-            return generatedText;
+            return new LlmGenericResponse(generatedText, 0, true);
         }
     }
 }

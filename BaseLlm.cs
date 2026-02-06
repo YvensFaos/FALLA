@@ -8,9 +8,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using FALLA.Exception;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.Networking;
 
 namespace FALLA
@@ -19,8 +17,9 @@ namespace FALLA
     {
         protected readonly string APIKey;
         protected readonly string APIUrl;
+
         protected delegate UnityWebRequest WebRequestDelegate();
-        
+
         public string Model { get; set; }
         protected float Temperature { get; set; }
         protected int TopK { get; set; }
@@ -43,29 +42,15 @@ namespace FALLA
             StopSequences = new List<string>();
         }
 
-        public abstract Task<string> SendRequest(string content);
-        
-        protected static async Task<string> AttemptRequest(WebRequestDelegate webRequestDelegate)
-        {
-            var retry = false;
-            var attempts = 5;
-            const int timer = 40000;
-            var request = webRequestDelegate.Invoke();
-            do
-            {
-                await request.SendWebRequest();
-                if (request.result == UnityWebRequest.Result.Success) continue;
-                request.Dispose();
-                retry = true;
-                await Task.Delay(timer);
-                request = webRequestDelegate.Invoke();
-            } while (retry && --attempts >= 0);
+        public abstract Task<LlmGenericResponse> SendRequest(string content);
 
-            if (attempts <= 0 || request.result != UnityWebRequest.Result.Success)
-            {
-                throw new NoResponseException(request, request.error, request.downloadHandler.text);
-            }
-            var response = request.downloadHandler.text;
+        protected async Task<LlmGenericResponse> AttemptRequest(WebRequestDelegate webRequestDelegate)
+        {
+            var request = webRequestDelegate.Invoke();
+            await request.SendWebRequest();
+            var response = request.result == UnityWebRequest.Result.Success
+                ? new LlmGenericResponse(request.downloadHandler.text, 0, true)
+                : new LlmGenericResponse(request.error, 0, false);
             request.Dispose();
             return response;
         }

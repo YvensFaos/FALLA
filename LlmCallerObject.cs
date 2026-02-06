@@ -28,7 +28,7 @@ namespace FALLA
 
         private BaseLlm _llm;
         private bool _ready;
-        private string _response;
+        private LlmGenericResponse _response;
 
         private void Awake()
         {
@@ -36,7 +36,7 @@ namespace FALLA
             llmModel = _llm.Model;
 
             _ready = false;
-            _response = "";
+            _response = LlmGenericResponse.EmptyResponse();
         }
 
         public void LoadModel(string newModel)
@@ -62,24 +62,17 @@ namespace FALLA
             }
 
             _ready = false;
-            _response = "";
-            try
-            {
-                SubmitAsync(prompt);
-            }
-            catch (System.Exception e)
-            {
-                throw;
-            }
+            _response = LlmGenericResponse.EmptyResponse();
+            SubmitAsync(prompt);
         }
 
-        public void CallLlmWithCallback(string prompt, UnityAction<string> callback)
+        public void CallLlmWithCallback(string prompt, UnityAction<LlmGenericResponse> callback)
         {
             CallLlm(prompt);
             StartCoroutine(CallLlmCoroutine(callback));
         }
 
-        private IEnumerator CallLlmCoroutine(UnityAction<string> callback)
+        private IEnumerator CallLlmCoroutine(UnityAction<LlmGenericResponse> callback)
         {
             yield return new WaitUntil(IsReady);
             callback(GetResponse());
@@ -87,20 +80,12 @@ namespace FALLA
 
         private async void SubmitAsync(string prompt)
         {
-            try
-            {
-                _response = await _llm.SendRequest(prompt);
-            }
-            catch (NoResponseException e)
-            {
-                throw;
-            }
-
+            _response = await _llm.SendRequest(prompt);
             _ready = true;
         }
 
         public bool IsReady() => _ready;
-        public string GetResponse() => _response;
+        public LlmGenericResponse GetResponse() => _response;
         public LlmType GetLlmType() => llmType;
         public string GetLlmModel() => llmModel;
 

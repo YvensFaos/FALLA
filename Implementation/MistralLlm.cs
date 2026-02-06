@@ -74,11 +74,11 @@ namespace FALLA.Implementation
     public class MistralLlm : BaseLlm
     {
         public MistralLlm(string apiKey, string model = "magistral-small-2509") :
-            base(apiKey, "https://api.mistral.ai/v1/chat/completions", model)
+            base(apiKey, "https://api.mistral.ai/v1/chat/completionsx", model)
         {
         }
 
-        public override async Task<string> SendRequest(string content)
+        public override async Task<LlmGenericResponse> SendRequest(string content)
         {
             var requestBody = new
             {
@@ -91,7 +91,7 @@ namespace FALLA.Implementation
                 max_tokens = MaxOutputTokens
             };
 
-            var result = await AttemptRequest(() =>
+            var llmGenericResponse = await AttemptRequest(() =>
             {
                 var request = new UnityWebRequest(APIUrl, "POST");
                 var jsonBody = JsonConvert.SerializeObject(requestBody);
@@ -103,18 +103,21 @@ namespace FALLA.Implementation
                 return request;
             });
 
-            var response = JsonConvert.DeserializeObject<MistralResponse>(result);
+            if (!llmGenericResponse.success)
+            {
+                return llmGenericResponse;
+            }
+
+            var response = JsonConvert.DeserializeObject<MistralResponse>(llmGenericResponse.response);
             if (response.choices is not { Count: > 0 } && response.choices[0].Message != null)
             {
-                // throw new NoCandidateException(request, responseText);
-                return null;
+                return new LlmGenericResponse(llmGenericResponse.response, 0, false);
             }
 
             var mistralMessage = response.choices[0].Message;
             if (mistralMessage == null)
             {
-                // throw new NoCandidateException(request, responseText);
-                return null;
+                return new LlmGenericResponse(llmGenericResponse.response, 0, false);
             }
 
             var mistralContentResult = "";
@@ -138,7 +141,7 @@ namespace FALLA.Implementation
                 }
             }
 
-            return mistralContentResult;
+            return new LlmGenericResponse(mistralContentResult, 0, true);
         }
     }
 }

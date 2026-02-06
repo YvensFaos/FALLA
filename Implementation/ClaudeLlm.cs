@@ -47,7 +47,7 @@ namespace FALLA.Implementation
 
     public class ClaudeLlm : BaseLlm
     {
-        private string _version;
+        private readonly string _version;
 
         public ClaudeLlm(string apiKey, string model = "claude-sonnet-4-5-20250929", string version = "2023-06-01") :
             base(apiKey, "https://api.anthropic.com/v1/messages", model)
@@ -55,20 +55,20 @@ namespace FALLA.Implementation
             _version = version;
         }
 
-        public override async Task<string> SendRequest(string content)
+        public override async Task<LlmGenericResponse> SendRequest(string content)
         {
             var requestBody = new
             {
                 model = Model,
                 messages = new[]
                 {
-                    new { role = "user", content = content }
+                    new { role = "user", content }
                 },
                 temperature = Temperature,
                 max_tokens = MaxOutputTokens
             };
 
-            var result = await AttemptRequest(() =>
+            var llmGenericResponse = await AttemptRequest(() =>
             {
                 var request = new UnityWebRequest(APIUrl, "POST");
                 var jsonBody = JsonConvert.SerializeObject(requestBody);
@@ -81,18 +81,22 @@ namespace FALLA.Implementation
                 return request;
             });
 
+            if (!llmGenericResponse.success)
+            {
+                return llmGenericResponse;
+            }
+
+            var result = llmGenericResponse.response;
             var response = JsonConvert.DeserializeObject<ClaudeResponse>(result);
             if (response.content is not { Length: > 0 } && response.content[0].text != null)
             {
-                // throw new NoCandidateException(request, responseText);
-                return null;
+                return new LlmGenericResponse(result, 0, false);
             }
 
             var claudeMessage = response.content[0].text;
             if (claudeMessage == null)
             {
-                // throw new NoCandidateException(request, responseText);
-                return null;
+                return new LlmGenericResponse(result, 0, false);
             }
 
             var claudeContentResult = "";
@@ -102,7 +106,7 @@ namespace FALLA.Implementation
                 claudeContentResult = claudeContent.text;
             }
 
-            return claudeContentResult;
+            return new LlmGenericResponse(claudeContentResult, 0, true);
         }
     }
 }
