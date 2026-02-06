@@ -150,12 +150,12 @@ namespace FALLA.Implementation
                 return request;
             });
 
-            if (!llmGenericResponse.success)
+            if (!llmGenericResponse.Success)
             {
                 return llmGenericResponse;
             }
 
-            var response = JsonConvert.DeserializeObject<DeepSeekResponse>(llmGenericResponse.response);
+            var response = JsonConvert.DeserializeObject<DeepSeekResponse>(llmGenericResponse.Response);
             var deepSeekContentResult = "";
 
             ClearThinkingCache();
@@ -170,10 +170,10 @@ namespace FALLA.Implementation
             else
             {
                 // throw new NoResponseException(request, request.error, request.downloadHandler.text);
-                return new LlmGenericResponse(llmGenericResponse.response, 0, false);
+                return new LlmGenericResponse(llmGenericResponse.Response, false);
             }
 
-            return new LlmGenericResponse(deepSeekContentResult, 0, true);
+            return new LlmGenericResponse(deepSeekContentResult, true);
         }
     }
 }

@@ -49,8 +49,8 @@ namespace FALLA
             var request = webRequestDelegate.Invoke();
             await request.SendWebRequest();
             var response = request.result == UnityWebRequest.Result.Success
-                ? new LlmGenericResponse(request.downloadHandler.text, 0, true)
-                : new LlmGenericResponse(request.error, 0, false);
+                ? new LlmGenericResponse(request.downloadHandler.text, true)
+                : new LlmGenericResponse(request.error, false);
             request.Dispose();
             return response;
         }

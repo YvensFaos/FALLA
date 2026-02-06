@@ -74,7 +74,7 @@ namespace FALLA.Implementation
     public class MistralLlm : BaseLlm
     {
         public MistralLlm(string apiKey, string model = "magistral-small-2509") :
-            base(apiKey, "https://api.mistral.ai/v1/chat/completionsx", model)
+            base(apiKey, "https://api.mistral.ai/v1/chat/completions", model)
         {
         }
 
@@ -103,21 +103,21 @@ namespace FALLA.Implementation
                 return request;
             });
 
-            if (!llmGenericResponse.success)
+            if (!llmGenericResponse.Success)
             {
                 return llmGenericResponse;
             }
 
-            var response = JsonConvert.DeserializeObject<MistralResponse>(llmGenericResponse.response);
+            var response = JsonConvert.DeserializeObject<MistralResponse>(llmGenericResponse.Response);
             if (response.choices is not { Count: > 0 } && response.choices[0].Message != null)
             {
-                return new LlmGenericResponse(llmGenericResponse.response, 0, false);
+                return new LlmGenericResponse(llmGenericResponse.Response, false);
             }
 
             var mistralMessage = response.choices[0].Message;
             if (mistralMessage == null)
             {
-                return new LlmGenericResponse(llmGenericResponse.response, 0, false);
+                return new LlmGenericResponse(llmGenericResponse.Response, false);
             }
 
             var mistralContentResult = "";
@@ -141,7 +141,7 @@ namespace FALLA.Implementation
                 }
             }
 
-            return new LlmGenericResponse(mistralContentResult, 0, true);
+            return new LlmGenericResponse(mistralContentResult, true);
         }
     }
 }

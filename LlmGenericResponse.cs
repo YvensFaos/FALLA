@@ -2,17 +2,15 @@ namespace FALLA
 {
     public struct LlmGenericResponse
     {
-        public string response;
-        public int attempts;
-        public bool success;
+        public readonly string Response;
+        public readonly bool Success;
 
-        public LlmGenericResponse(string response, int attempts, bool success)
+        public LlmGenericResponse(string response, bool success)
         {
-            this.response = response;
-            this.attempts = attempts;
-            this.success = success;
+            Response = response;
+            Success = success;
         }
 
-        public static LlmGenericResponse EmptyResponse() => new LlmGenericResponse("", -1, false);
+        public static LlmGenericResponse EmptyResponse() => new LlmGenericResponse("", false);
     }
 }

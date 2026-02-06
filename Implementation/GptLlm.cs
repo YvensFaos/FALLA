@@ -106,12 +106,12 @@ namespace FALLA.Implementation
                 return request;
             });
 
-            if (!llmGenericResponse.success)
+            if (!llmGenericResponse.Success)
             {
                 return llmGenericResponse;
             }
 
-            var response = JsonConvert.DeserializeObject<GptResponse>(llmGenericResponse.response);
+            var response = JsonConvert.DeserializeObject<GptResponse>(llmGenericResponse.Response);
             var gptContentResult = "";
 
             ClearThinkingCache();
@@ -122,10 +122,10 @@ namespace FALLA.Implementation
             }
             else
             {
-                return new LlmGenericResponse(llmGenericResponse.response, 0, false);
+                return new LlmGenericResponse(llmGenericResponse.Response, false);
             }
 
-            return new LlmGenericResponse(gptContentResult, 0, true);
+            return new LlmGenericResponse(gptContentResult, true);
         }
     }
 }

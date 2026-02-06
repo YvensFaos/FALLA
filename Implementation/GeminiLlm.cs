@@ -128,19 +128,19 @@ namespace FALLA.Implementation
                 return request;
             });
 
-            if (!llmGenericResponse.success)
+            if (!llmGenericResponse.Success)
             {
                 return llmGenericResponse;
             }
 
-            var response = JsonConvert.DeserializeObject<GeminiResponse>(llmGenericResponse.response);
+            var response = JsonConvert.DeserializeObject<GeminiResponse>(llmGenericResponse.Response);
             if (response?.candidates == null || response.candidates.Count == 0)
             {
-                return new LlmGenericResponse(llmGenericResponse.response, 0, false);
+                return new LlmGenericResponse(llmGenericResponse.Response, false);
             }
 
             var generatedText = response.candidates[0].content.parts[0].text;
-            return new LlmGenericResponse(generatedText, 0, true);
+            return new LlmGenericResponse(generatedText, true);
         }
     }
 }

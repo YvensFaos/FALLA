@@ -81,22 +81,22 @@ namespace FALLA.Implementation
                 return request;
             });
 
-            if (!llmGenericResponse.success)
+            if (!llmGenericResponse.Success)
             {
                 return llmGenericResponse;
             }
 
-            var result = llmGenericResponse.response;
+            var result = llmGenericResponse.Response;
             var response = JsonConvert.DeserializeObject<ClaudeResponse>(result);
             if (response.content is not { Length: > 0 } && response.content[0].text != null)
             {
-                return new LlmGenericResponse(result, 0, false);
+                return new LlmGenericResponse(result, false);
             }
 
             var claudeMessage = response.content[0].text;
             if (claudeMessage == null)
             {
-                return new LlmGenericResponse(result, 0, false);
+                return new LlmGenericResponse(result, false);
             }
 
             var claudeContentResult = "";
@@ -106,7 +106,7 @@ namespace FALLA.Implementation
                 claudeContentResult = claudeContent.text;
             }
 
-            return new LlmGenericResponse(claudeContentResult, 0, true);
+            return new LlmGenericResponse(claudeContentResult, true);
         }
     }
 }
