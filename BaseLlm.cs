@@ -15,8 +15,8 @@ namespace FALLA
 {
     public abstract class BaseLlm
     {
-        protected readonly string APIKey;
-        protected readonly string APIUrl;
+        protected readonly string apiKey;
+        protected readonly string apiUrl;
 
         protected delegate UnityWebRequest WebRequestDelegate();
 
@@ -32,8 +32,8 @@ namespace FALLA
         protected BaseLlm(string apiKey, string apiUrl, string model, float temperature = 0.2f, int topK = 40,
             int topP = 1, int maxOutputTokens = 4096)
         {
-            APIKey = apiKey;
-            APIUrl = apiUrl;
+            this.apiKey = apiKey;
+            this.apiUrl = apiUrl;
             Model = model;
             Temperature = temperature;
             TopK = topK;
@@ -44,7 +44,7 @@ namespace FALLA
 
         public abstract Task<LlmGenericResponse> SendRequest(string content);
 
-        protected async Task<LlmGenericResponse> AttemptRequest(WebRequestDelegate webRequestDelegate)
+        protected static async Task<LlmGenericResponse> AttemptRequest(WebRequestDelegate webRequestDelegate)
         {
             var request = webRequestDelegate.Invoke();
             await request.SendWebRequest();

@@ -86,7 +86,7 @@ namespace FALLA.Implementation
         public GeminiLlm(string apiKey, string model = "gemini-2.5-flash-lite")
             : base(apiKey, "https://generativelanguage.googleapis.com/v1beta/models/", model)
         {
-            _url = $"{APIUrl}{Model}:generateContent?key={APIKey}";
+            _url = $"{apiUrl}{Model}:generateContent?key={base.apiKey}";
         }
 
         /// <summary>

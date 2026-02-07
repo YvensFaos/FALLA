@@ -93,9 +93,9 @@ namespace FALLA.Implementation
 
             var llmGenericResponse = await AttemptRequest(() =>
             {
-                var request = new UnityWebRequest(APIUrl, "POST");
+                var request = new UnityWebRequest(apiUrl, "POST");
                 var jsonBody = JsonConvert.SerializeObject(requestBody);
-                request.SetRequestHeader("Authorization", "Bearer " + APIKey);
+                request.SetRequestHeader("Authorization", "Bearer " + apiKey);
                 request.SetRequestHeader("Content-Type", "application/json");
                 var bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
                 request.uploadHandler = new UploadHandlerRaw(bodyRaw);
