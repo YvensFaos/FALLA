@@ -9,7 +9,7 @@ FALLA is a framework to access LLMs via simple prompting in Unity Projects.
 
 FALLA uses [Newtonsoft.Json](https://www.newtonsoft.com/json) for JSON parsing.
 
-Install Newtonsoft using the Unity Package Manager > Add Repository via Git > "com.unity.nuget.newtonsoft-json".
+Install Newtonsoft using the Unity Package Manager > Add Repository via Git > "com.unity.nuget.newtonsoft-json". Alternatively, you can use the Unity Package Mananger > Install package by name > "com.unity.nuget.newtonsoft-json".
 
 ## License
 

@@ -15,7 +15,7 @@ using UnityEngine.Networking;
 
 namespace FALLA.Implementation
 {
-    public class MistralListContentConverted : JsonConverter<List<MistralContent>>
+    public class MistralListContentConverter : JsonConverter<List<MistralContent>>
     {
         public override void WriteJson(JsonWriter writer, List<MistralContent> value, JsonSerializer serializer)
         {
@@ -89,7 +89,7 @@ namespace FALLA.Implementation
         [JsonProperty("tool_calls")] public object ToolCalls { get; set; }
 
         [JsonProperty("content")]
-        [JsonConverter(typeof(MistralListContentConverted))]
+        [JsonConverter(typeof(MistralListContentConverter))]
         public List<MistralContent> content { get; set; }
     }
 
