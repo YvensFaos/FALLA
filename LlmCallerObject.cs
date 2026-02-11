@@ -39,6 +39,12 @@ namespace FALLA
             _response = LlmGenericResponse.EmptyResponse();
         }
 
+        [ContextMenu("Reload Model")]
+        public void ReloadModel()
+        {
+            LoadModel(llmModel);
+        }
+
         public void LoadModel(string newModel)
         {
             var llmKeyPair = llmTypeKeyPairs.Find((pair) => pair.type == llmType);
