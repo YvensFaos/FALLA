@@ -6,7 +6,6 @@
  * or see the LICENSE file in the root directory of this repository.
  */
 
-using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEngine.Networking;
@@ -24,59 +23,26 @@ namespace FALLA.Implementation
     internal class GptResponse
     {
         public string id;
-        [JsonProperty("object")] public string chatObject;
-        public GptChoice[] choices;
-        [JsonProperty("service_tier")] public string serviceTier;
-        [JsonProperty("system_fingerprint")] public string systemFingerPrint;
-        public GptUsage usage;
-
-        [JsonProperty("completion_tokens_details")]
-        public GptCompletionTokenDetails completionTokenDetails;
+        public GptResponseOutput[] output;
+    }
+    
+    [System.Serializable]
+    internal class GptResponseOutput
+    {
+        public GptResponseContent[] content;
     }
 
     [System.Serializable]
-    internal class GptCompletionTokenDetails
+    internal class GptResponseContent
     {
-        [JsonProperty("reasoning_tokens")] public int reasoningTokens;
-        [JsonProperty("audio_tokens")] public int audioTokens;
-
-        [JsonProperty("accepted_prediction_tokens")]
-        public int acceptedPredictionTokens;
-
-        [JsonProperty("rejected_prediction_tokens")]
-        public int rejectedPredictionTokens;
-    }
-
-    [System.Serializable]
-    internal class GptUsage
-    {
-        [JsonProperty("prompt_tokens")] public int promptTokens;
-        [JsonProperty("completion_tokens")] public int completionTokens;
-        [JsonProperty("total_tokens")] public int totalTokens;
-
-        [JsonProperty("prompt_tokens_details")]
-        public GptPromptTokenDetails promptTokenDetails;
-    }
-
-    [System.Serializable]
-    internal class GptPromptTokenDetails
-    {
-        [JsonProperty("cached_tokens")] public int cachedTokens;
-        [JsonProperty("audio_tokens")] public int audioTokens;
-    }
-
-    [System.Serializable]
-    internal class GptChoice
-    {
-        public int index;
-        [JsonProperty("finish_reason")] public string finishReason;
-        public GptMessage message;
+        public string type;
+        public string text;
     }
 
     public class GptLlm : BaseLlm
     {
         public GptLlm(string apiKey, string model = "gpt-4.1-mini") :
-            base(apiKey, "https://api.openai.com/v1/chat/completions", model)
+            base(apiKey, "https://api.openai.com/v1/responses", model)
         {
         }
 
@@ -85,13 +51,12 @@ namespace FALLA.Implementation
             var requestBody = new
             {
                 model = Model,
-                messages = new[]
+                input = new[]
                 {
-                    new { role = "user", content }
+                    new { role = "user", content = content }
                 },
                 temperature = Temperature,
-                max_tokens = MaxOutputTokens,
-                stream = false
+                max_output_tokens = MaxOutputTokens
             };
 
             var llmGenericResponse = await AttemptRequest(() =>
@@ -105,7 +70,6 @@ namespace FALLA.Implementation
                 request.downloadHandler = new DownloadHandlerBuffer();
                 return request;
             });
-
             if (!llmGenericResponse.Success)
             {
                 return llmGenericResponse;
@@ -115,14 +79,15 @@ namespace FALLA.Implementation
             var gptContentResult = "";
 
             ClearThinkingCache();
-            if (response is { choices: { Length: > 0 } })
+            if (response?.output == null) return new LlmGenericResponse(gptContentResult, false);
+            foreach (var item in response.output)
             {
-                gptContentResult = response.choices.Aggregate(gptContentResult,
-                    (current, choice) => current + choice.message.content);
-            }
-            else
-            {
-                return new LlmGenericResponse(llmGenericResponse.Response, false);
+                if (item.content == null) continue;
+                foreach (var contentItem in item.content)
+                {
+                    if (contentItem.type == "output_text")
+                        gptContentResult += contentItem.text;
+                }
             }
 
             return new LlmGenericResponse(gptContentResult, true);
