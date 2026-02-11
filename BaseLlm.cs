@@ -70,6 +70,11 @@ namespace FALLA
             _thinkingCache.Add(sequence);
         }
 
+        protected static string RemoveNullField(string text)
+        {
+            return text.Replace("null", "[-1,-1]");
+        }
+
         /// <summary>
         /// Returns the last cached thinking messages compiled from the last request.
         /// </summary>

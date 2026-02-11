@@ -10,10 +10,47 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UnityEngine.Networking;
 
 namespace FALLA.Implementation
 {
+    public class MistralListContentConverted : JsonConverter<List<MistralContent>>
+    {
+        public override void WriteJson(JsonWriter writer, List<MistralContent> value, JsonSerializer serializer)
+        {
+            serializer.Serialize(writer, value);
+        }
+
+        public override List<MistralContent> ReadJson(JsonReader reader, Type objectType, List<MistralContent> existingValue, bool hasExistingValue,
+            JsonSerializer serializer)
+        {
+            var token = JToken.Load(reader);
+            if (token.Type == JTokenType.String)
+            {
+                var text = token.Value<string>();
+                return new List<MistralContent>
+                {
+                    new()
+                    {
+                        type = "text",
+                        Text = text
+                    }
+                };
+            }
+            if (token.Type == JTokenType.Object)
+            {
+                var content = token.ToObject<MistralContent>(serializer);
+                return new List<MistralContent> { content };
+            }
+            if (token.Type == JTokenType.Array)
+            {
+                return token.ToObject<List<MistralContent>>(serializer);
+            }
+            return new List<MistralContent>();
+        }
+    }
+
     [Serializable]
     public class MistralResponse
     {
@@ -51,6 +88,8 @@ namespace FALLA.Implementation
 
         [JsonProperty("tool_calls")] public object ToolCalls { get; set; }
 
+        [JsonProperty("content")]
+        [JsonConverter(typeof(MistralListContentConverted))]
         public List<MistralContent> content { get; set; }
     }
 
