@@ -55,7 +55,6 @@ namespace FALLA.Implementation
                 {
                     new { role = "user", content = content }
                 },
-                temperature = Temperature,
                 max_output_tokens = MaxOutputTokens
             };
 
