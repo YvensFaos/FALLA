@@ -10,6 +10,6 @@ namespace FALLA
 {
     public enum LlmType
     {
-        Gemini, Mistral, DeepSeek, Claude, GPT, Custom
+        Gemini, Mistral, DeepSeek, Claude, GPT, Custom, OpenRouter
     }
 }

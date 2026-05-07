@@ -11,6 +11,16 @@ FALLA uses [Newtonsoft.Json](https://www.newtonsoft.com/json) for JSON parsing.
 
 Install Newtonsoft using the Unity Package Manager > Add Repository via Git > "com.unity.nuget.newtonsoft-json". Alternatively, you can use the Unity Package Mananger > Install package by name > "com.unity.nuget.newtonsoft-json".
 
+## OpenRouter
+
+FALLA supports OpenRouter through `LlmType.OpenRouter`. Add your OpenRouter API key
+to the same key file used by `LlmCallerObject`, then map the OpenRouter enum value
+to that key in `llmTypeKeyPairs`.
+
+The default OpenRouter model is `openai/gpt-5.4-mini`. When overriding the model,
+use OpenRouter model slugs in the `provider/model` format, such as
+`openai/gpt-5.4-mini`.
+
 ## License
 
 This project is licensed under the Creative Commons Attribution 4.0 International License.

@@ -9,3 +9,4 @@
 .DS_Store
 Thumbs.db
 /[Aa]ssets/Editor\ Default\ Resources/FMODStudioCache.asset*
+.envrc
