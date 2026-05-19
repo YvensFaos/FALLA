@@ -23,6 +23,7 @@ namespace FALLA
                 LlmType.Claude => new ClaudeLlm(apiKey),
                 LlmType.GPT => new GptLlm(apiKey),
                 LlmType.OpenRouter => new OpenRouterLlm(apiKey),
+                LlmType.Gemma => new GemmaLlm(apiKey),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
         }
@@ -37,6 +38,7 @@ namespace FALLA
                 LlmType.Claude => new ClaudeLlm(apiKey, model),
                 LlmType.GPT => new GptLlm(apiKey, model),
                 LlmType.OpenRouter => new OpenRouterLlm(apiKey, model),
+                LlmType.Gemma => new GemmaLlm(apiKey, model),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
         }
