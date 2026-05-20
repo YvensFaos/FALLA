@@ -71,7 +71,7 @@ namespace FALLA.Implementation
         public GemmaLlm(string apiKey, string model = "gemma-4-26b-a4b-it")
             : base(apiKey, "https://generativelanguage.googleapis.com/v1beta/models/", model)
         {
-            _url = $"{apiUrl}{Model}:generateContent?key={base.apiKey}";
+            _url = $"{apiUrl}{Model}:generateContent?key={this.apiKey}";
         }
         
         /// <summary>
@@ -79,8 +79,6 @@ namespace FALLA.Implementation
         /// </summary>
         /// <param name="content"></param>
         /// <returns></returns>
-        /// <exception cref="NoResponseException"></exception>
-        /// <exception cref="NoCandidateException"></exception>
         public override async Task<LlmGenericResponse> SendRequest(string content)
         {
             var requestData = new GeminiRequest
@@ -124,9 +122,13 @@ namespace FALLA.Implementation
                 return new LlmGenericResponse(llmGenericResponse.Response, false);
             }
 
-            var generatedText = "";
+            if (response.candidates == null || response.candidates.Count == 0 || response.candidates[0]?.content?.parts == null)
+            {
+                return llmGenericResponse;
+            }
+            
             var parts = response.candidates[0].content.parts;
-            generatedText = parts.Find(part => part.thought == null).text;
+            var generatedText = parts.Find(part => part.thought == null).text;
             return new LlmGenericResponse(generatedText, true);
         }
     }
