@@ -128,7 +128,11 @@ namespace FALLA.Implementation
             }
             
             var parts = response.candidates[0].content.parts;
-            var generatedText = parts.Find(part => part.thought == null).text;
+			var part = parts.Find(part => part.thought == null);
+            if(part == null) {
+                return llmGenericResponse;
+            }
+            var generatedText = part.text;
             return new LlmGenericResponse(generatedText, true);
         }
     }
