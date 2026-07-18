@@ -28,15 +28,37 @@ namespace FALLA
 
         private BaseLlm _llm;
         private bool _ready;
+        private bool _initialized;
         private LlmGenericResponse _response;
 
         private void Awake()
         {
+            if (_initialized) return;
             LoadModel(llmModel);
             llmModel = _llm.Model;
+            InitializeFlags();
+        }
 
+        private void InitializeFlags()
+        {
             _ready = false;
             _response = LlmGenericResponse.EmptyResponse();
+            _initialized = true;
+        }
+
+        public void Initialize(LlmType type, string model, string typeKey)
+        {
+            llmType = type;
+            llmModel = model;
+            var keyValue = JsonFileReader.GetValueFromValuePairJson(apiKeyFile, typeKey);
+            if (string.IsNullOrEmpty(keyValue))
+            {
+                throw new LlmKeyNotFoundException(apiKeyFile, type, typeKey);
+            }
+            _llm = string.IsNullOrEmpty(llmModel)
+                ? LLmFactory.CreateLlm(llmType, keyValue)
+                : LLmFactory.CreateLlm(llmType, keyValue, llmModel);
+            InitializeFlags();
         }
 
         [ContextMenu("Reload Model")]
