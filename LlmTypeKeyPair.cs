@@ -14,6 +14,6 @@ namespace FALLA
     public struct LlmTypeKeyPair
     {
         public LlmType type;
-        public string key;
+        public LlmConfig config;
     }
 }

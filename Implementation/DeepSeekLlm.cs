@@ -119,9 +119,18 @@ namespace FALLA.Implementation
 
     public class DeepSeekLlm : BaseLlm
     {
-        public DeepSeekLlm(string apiKey, string model = "deepseek-reasoner") :
-            base(apiKey, "https://api.deepseek.com/chat/completions", model)
+        public DeepSeekLlm(string apiKey, LlmConfig config) : base(apiKey, config)
         {
+            var defaultConfig = GetDefaultConfig();
+            if (string.IsNullOrEmpty(config.apiUrl))
+            {
+                apiUrl = defaultConfig.apiUrl;
+            }
+
+            if (string.IsNullOrEmpty(config.model))
+            {
+                Model = defaultConfig.model;
+            }
         }
 
         public override async Task<LlmGenericResponse> SendRequest(string content)
@@ -142,7 +151,11 @@ namespace FALLA.Implementation
             {
                 var request = new UnityWebRequest(apiUrl, "POST");
                 var jsonBody = JsonConvert.SerializeObject(requestBody);
-                request.SetRequestHeader("Authorization", "Bearer " + apiKey);
+                if (!IsLocal())
+                {
+                    request.SetRequestHeader("Authorization", "Bearer " + apiKey);
+                }
+
                 request.SetRequestHeader("Content-Type", "application/json");
                 var bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
                 request.uploadHandler = new UploadHandlerRaw(bodyRaw);
@@ -150,12 +163,12 @@ namespace FALLA.Implementation
                 return request;
             });
 
-            if (!llmGenericResponse.Success)
+            if (!llmGenericResponse.success)
             {
                 return llmGenericResponse;
             }
 
-            var response = JsonConvert.DeserializeObject<DeepSeekResponse>(llmGenericResponse.Response);
+            var response = JsonConvert.DeserializeObject<DeepSeekResponse>(llmGenericResponse.response);
             var deepSeekContentResult = "";
 
             ClearThinkingCache();
@@ -169,11 +182,17 @@ namespace FALLA.Implementation
             }
             else
             {
-                // throw new NoResponseException(request, request.error, request.downloadHandler.text);
-                return new LlmGenericResponse(llmGenericResponse.Response, false);
+                return new LlmGenericResponse(llmGenericResponse.response, false);
             }
 
             return new LlmGenericResponse(deepSeekContentResult, true);
+        }
+
+        public static LlmConfig GetDefaultConfig()
+        {
+            var defaultDeepSeek =
+                new LlmConfig("", "", "https://api.deepseek.com/chat/completions", "deepseek-reasoner");
+            return defaultDeepSeek;
         }
     }
 }

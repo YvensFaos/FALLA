@@ -16,7 +16,7 @@ namespace FALLA
     public abstract class BaseLlm
     {
         protected readonly string apiKey;
-        protected readonly string apiUrl;
+        protected string apiUrl;
 
         protected delegate UnityWebRequest WebRequestDelegate();
 
@@ -29,17 +29,19 @@ namespace FALLA
 
         private List<string> _thinkingCache;
 
-        protected BaseLlm(string apiKey, string apiUrl, string model, float temperature = 0.2f, int topK = 40,
-            int topP = 1, int maxOutputTokens = 4096)
+        private bool _local;
+
+        protected BaseLlm(string apiKey, LlmConfig config)
         {
             this.apiKey = apiKey;
-            this.apiUrl = apiUrl;
-            Model = model;
-            Temperature = temperature;
-            TopK = topK;
-            TopP = topP;
-            MaxOutputTokens = maxOutputTokens;
+            apiUrl = config.apiUrl;
+            Model = config.model;
+            Temperature = config.temperature;
+            TopK = config.topK;
+            TopP = config.topP;
+            MaxOutputTokens = config.maxOutputTokens;
             StopSequences = new List<string>();
+            _local = config.local;
         }
 
         public abstract Task<LlmGenericResponse> SendRequest(string content);
@@ -78,5 +80,7 @@ namespace FALLA
         {
             return _thinkingCache;
         }
+        
+        public bool IsLocal() => _local;
     }
 }

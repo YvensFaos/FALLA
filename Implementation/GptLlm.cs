@@ -25,7 +25,7 @@ namespace FALLA.Implementation
         public string id;
         public GptResponseOutput[] output;
     }
-    
+
     [System.Serializable]
     internal class GptResponseOutput
     {
@@ -41,9 +41,18 @@ namespace FALLA.Implementation
 
     public class GptLlm : BaseLlm
     {
-        public GptLlm(string apiKey, string model = "gpt-4.1-mini") :
-            base(apiKey, "https://api.openai.com/v1/responses", model)
+        public GptLlm(string apiKey, LlmConfig config) : base(apiKey, config)
         {
+            var defaultConfig = GetDefaultConfig();
+            if (string.IsNullOrEmpty(config.apiUrl))
+            {
+                apiUrl = defaultConfig.apiUrl;
+            }
+
+            if (string.IsNullOrEmpty(config.model))
+            {
+                Model = defaultConfig.model;
+            }
         }
 
         public override async Task<LlmGenericResponse> SendRequest(string content)
@@ -62,19 +71,22 @@ namespace FALLA.Implementation
             {
                 var request = new UnityWebRequest(apiUrl, "POST");
                 var jsonBody = JsonConvert.SerializeObject(requestBody);
-                request.SetRequestHeader("Authorization", "Bearer " + apiKey);
+                if (!IsLocal())
+                {
+                    request.SetRequestHeader("Authorization", "Bearer " + apiKey);    
+                }
                 request.SetRequestHeader("Content-Type", "application/json");
                 var bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
                 request.uploadHandler = new UploadHandlerRaw(bodyRaw);
                 request.downloadHandler = new DownloadHandlerBuffer();
                 return request;
             });
-            if (!llmGenericResponse.Success)
+            if (!llmGenericResponse.success)
             {
                 return llmGenericResponse;
             }
 
-            var response = JsonConvert.DeserializeObject<GptResponse>(llmGenericResponse.Response);
+            var response = JsonConvert.DeserializeObject<GptResponse>(llmGenericResponse.response);
             var gptContentResult = "";
 
             ClearThinkingCache();
@@ -90,6 +102,13 @@ namespace FALLA.Implementation
             }
 
             return new LlmGenericResponse(gptContentResult, true);
+        }
+
+        public static LlmConfig GetDefaultConfig()
+        {
+            var defaultGpt =
+                new LlmConfig("", "", "https://api.openai.com/v1/responses", "gpt-4.1-mini");
+            return defaultGpt;
         }
     }
 }

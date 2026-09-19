@@ -13,34 +13,19 @@ namespace FALLA
 {
     public static class LLmFactory
     {
-        public static BaseLlm CreateLlm(LlmType type, string apiKey)
+        public static BaseLlm CreateLlm(LlmType type, string apiKey, LlmConfig config)
         {
             return type switch
             {
-                LlmType.Gemini => new GeminiLlm(apiKey),
-                LlmType.Mistral => new MistralLlm(apiKey),
-                LlmType.DeepSeek => new DeepSeekLlm(apiKey),
-                LlmType.Claude => new ClaudeLlm(apiKey),
-                LlmType.GPT => new GptLlm(apiKey),
-                LlmType.OpenRouter => new OpenRouterLlm(apiKey),
-                LlmType.Gemma => new GemmaLlm(apiKey),
-                LlmType.Custom => new CustomLlm(apiKey), //api key acts as the URL
-                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-            };
-        }
-        
-        public static BaseLlm CreateLlm(LlmType type, string apiKey, string model)
-        {
-            return type switch
-            {
-                LlmType.Gemini => new GeminiLlm(apiKey, model),
-                LlmType.Mistral => new MistralLlm(apiKey, model),
-                LlmType.DeepSeek => new DeepSeekLlm(apiKey, model),
-                LlmType.Claude => new ClaudeLlm(apiKey, model),
-                LlmType.GPT => new GptLlm(apiKey, model),
-                LlmType.OpenRouter => new OpenRouterLlm(apiKey, model),
-                LlmType.Gemma => new GemmaLlm(apiKey, model),
-                LlmType.Custom => new CustomLlm(apiKey, model),
+                LlmType.Gemini => new GeminiLlm(apiKey, config),
+                LlmType.Mistral => new MistralLlm(apiKey, config),
+                LlmType.DeepSeek => new DeepSeekLlm(apiKey, config),
+                LlmType.Claude => new ClaudeLlm(apiKey, config),
+                LlmType.GPT => new GptLlm(apiKey, config),
+                LlmType.OpenRouter => new OpenRouterLlm(apiKey, config),
+                LlmType.Gemma => new GemmaLlm(apiKey, config),
+                LlmType.Custom => null, //TODO change
+                LlmType.Phi => new PhiLlm(apiKey, config), //TODO change
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
         }

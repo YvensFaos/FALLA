@@ -68,10 +68,21 @@ namespace FALLA.Implementation
     {
         private readonly string _url;
         
-        public GemmaLlm(string apiKey, string model = "gemma-4-26b-a4b-it")
-            : base(apiKey, "https://generativelanguage.googleapis.com/v1beta/models/", model)
+        public GemmaLlm(string apiKey, LlmConfig config) : base(apiKey, config)
         {
-            _url = $"{apiUrl}{Model}:generateContent?key={this.apiKey}";
+            var defaultConfig = GetDefaultConfig();
+            if (string.IsNullOrEmpty(config.apiUrl))
+            {
+                apiUrl = defaultConfig.apiUrl;
+            }
+
+            if (string.IsNullOrEmpty(config.model))
+            {
+                Model = defaultConfig.model;
+            }
+            
+            //TODO verify if this step holds in case of a local gemma version
+            _url = $"{apiUrl}{Model}:generateContent?key={apiKey}";
         }
         
         /// <summary>
@@ -111,15 +122,15 @@ namespace FALLA.Implementation
                 return request;
             });
 
-            if (!llmGenericResponse.Success)
+            if (!llmGenericResponse.success)
             {
                 return llmGenericResponse;
             }
 
-            var response = JsonConvert.DeserializeObject<GemmaResponse>(llmGenericResponse.Response);
+            var response = JsonConvert.DeserializeObject<GemmaResponse>(llmGenericResponse.response);
             if (response?.candidates == null || response.candidates.Count == 0)
             {
-                return new LlmGenericResponse(llmGenericResponse.Response, false);
+                return new LlmGenericResponse(llmGenericResponse.response, false);
             }
 
             if (response.candidates == null || response.candidates.Count == 0 || response.candidates[0]?.content?.parts == null)
@@ -134,6 +145,14 @@ namespace FALLA.Implementation
             }
             var generatedText = part.text;
             return new LlmGenericResponse(generatedText, true);
+        }
+
+        public static LlmConfig GetDefaultConfig()
+        {
+            var defaultGemma =
+                new LlmConfig("", "", "https://generativelanguage.googleapis.com/v1beta/models/",
+                    "gemma-4-26b-a4b-it");
+            return defaultGemma;
         }
     }
 }

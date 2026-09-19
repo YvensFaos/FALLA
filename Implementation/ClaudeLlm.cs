@@ -49,10 +49,20 @@ namespace FALLA.Implementation
     {
         private readonly string _version;
 
-        public ClaudeLlm(string apiKey, string model = "claude-sonnet-4-5-20250929", string version = "2023-06-01") :
-            base(apiKey, "https://api.anthropic.com/v1/messages", model)
+        public ClaudeLlm(string apiKey, LlmConfig config) : base(apiKey, config)
         {
-            _version = version;
+            var defaultConfig = GetDefaultConfig();
+            if (string.IsNullOrEmpty(config.apiUrl))
+            {
+                apiUrl = defaultConfig.apiUrl;
+            }
+
+            if (string.IsNullOrEmpty(config.model))
+            {
+                Model = defaultConfig.model;
+            }
+
+            _version = string.IsNullOrEmpty(config.version) ? defaultConfig.version : config.version;
         }
 
         public override async Task<LlmGenericResponse> SendRequest(string content)
@@ -72,7 +82,11 @@ namespace FALLA.Implementation
             {
                 var request = new UnityWebRequest(apiUrl, "POST");
                 var jsonBody = JsonConvert.SerializeObject(requestBody);
-                request.SetRequestHeader("x-api-key", apiKey);
+                if (!IsLocal())
+                {
+                    request.SetRequestHeader("x-api-key", apiKey);
+                }
+
                 request.SetRequestHeader("anthropic-version", _version);
                 request.SetRequestHeader("Content-Type", "application/json");
                 var bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
@@ -81,12 +95,12 @@ namespace FALLA.Implementation
                 return request;
             });
 
-            if (!llmGenericResponse.Success)
+            if (!llmGenericResponse.success)
             {
                 return llmGenericResponse;
             }
 
-            var result = llmGenericResponse.Response;
+            var result = llmGenericResponse.response;
             var response = JsonConvert.DeserializeObject<ClaudeResponse>(result);
             if (response.content is not { Length: > 0 } && response.content[0].text != null)
             {
@@ -107,6 +121,16 @@ namespace FALLA.Implementation
             }
 
             return new LlmGenericResponse(claudeContentResult, true);
+        }
+
+        public static LlmConfig GetDefaultConfig()
+        {
+            var defaultClaude =
+                new LlmConfig("", "", "https://api.anthropic.com/v1/messages", "claude-sonnet-4-5-20250929")
+                {
+                    version = "2023-06-01",
+                };
+            return defaultClaude;
         }
     }
 }

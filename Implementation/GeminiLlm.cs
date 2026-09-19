@@ -83,10 +83,20 @@ namespace FALLA.Implementation
     {
         private readonly string _url;
 
-        public GeminiLlm(string apiKey, string model = "gemini-2.5-flash-lite")
-            : base(apiKey, "https://generativelanguage.googleapis.com/v1beta/models/", model)
+        public GeminiLlm(string apiKey, LlmConfig config) : base(apiKey, config)
         {
-            _url = $"{apiUrl}{Model}:generateContent?key={base.apiKey}";
+            var defaultConfig = GetDefaultConfig();
+            if (string.IsNullOrEmpty(config.apiUrl))
+            {
+                apiUrl = defaultConfig.apiUrl;
+            }
+
+            if (string.IsNullOrEmpty(config.model))
+            {
+                Model = defaultConfig.model;
+            }
+            
+            _url = $"{apiUrl}{Model}:generateContent?key={apiKey}";
         }
 
         /// <summary>
@@ -128,19 +138,27 @@ namespace FALLA.Implementation
                 return request;
             });
 
-            if (!llmGenericResponse.Success)
+            if (!llmGenericResponse.success)
             {
                 return llmGenericResponse;
             }
 
-            var response = JsonConvert.DeserializeObject<GeminiResponse>(llmGenericResponse.Response);
+            var response = JsonConvert.DeserializeObject<GeminiResponse>(llmGenericResponse.response);
             if (response?.candidates == null || response.candidates.Count == 0)
             {
-                return new LlmGenericResponse(llmGenericResponse.Response, false);
+                return new LlmGenericResponse(llmGenericResponse.response, false);
             }
 
             var generatedText = response.candidates[0].content.parts[0].text;
             return new LlmGenericResponse(generatedText, true);
+        }
+
+        public static LlmConfig GetDefaultConfig()
+        {
+            var defaultGemini =
+                new LlmConfig("", "", "https://generativelanguage.googleapis.com/v1beta/models/",
+                    "gemini-2.5-flash-lite");
+            return defaultGemini;
         }
     }
 }

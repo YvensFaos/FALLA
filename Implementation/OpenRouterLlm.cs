@@ -36,9 +36,18 @@ namespace FALLA.Implementation
 
     public class OpenRouterLlm : BaseLlm
     {
-        public OpenRouterLlm(string apiKey, string model = "qwen/qwen3.6-35b-a3b") :
-            base(apiKey, "https://openrouter.ai/api/v1/chat/completions", model)
+        public OpenRouterLlm(string apiKey, LlmConfig config) : base(apiKey, config)
         {
+            var defaultConfig = GetDefaultConfig();
+            if (string.IsNullOrEmpty(config.apiUrl))
+            {
+                apiUrl = defaultConfig.apiUrl;
+            }
+
+            if (string.IsNullOrEmpty(config.model))
+            {
+                Model = defaultConfig.model;
+            }
         }
 
         public override async Task<LlmGenericResponse> SendRequest(string content)
@@ -65,7 +74,10 @@ namespace FALLA.Implementation
             {
                 var request = new UnityWebRequest(apiUrl, "POST");
                 var jsonBody = JsonConvert.SerializeObject(requestBody);
-                request.SetRequestHeader("Authorization", "Bearer " + apiKey);
+                if (!IsLocal())
+                {
+                    request.SetRequestHeader("Authorization", "Bearer " + apiKey);    
+                }
                 request.SetRequestHeader("Content-Type", "application/json");
                 var bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
                 request.uploadHandler = new UploadHandlerRaw(bodyRaw);
@@ -73,18 +85,18 @@ namespace FALLA.Implementation
                 return request;
             });
 
-            if (!llmGenericResponse.Success)
+            if (!llmGenericResponse.success)
             {
                 return llmGenericResponse;
             }
 
-            var response = JsonConvert.DeserializeObject<OpenRouterResponse>(llmGenericResponse.Response);
+            var response = JsonConvert.DeserializeObject<OpenRouterResponse>(llmGenericResponse.response);
             var openRouterContentResult = "";
 
             ClearThinkingCache();
             if (response is not { Choices: { Count: > 0 } })
             {
-                return new LlmGenericResponse(llmGenericResponse.Response, false);
+                return new LlmGenericResponse(llmGenericResponse.response, false);
             }
 
             foreach (var choice in response.Choices)
@@ -96,8 +108,17 @@ namespace FALLA.Implementation
             }
 
             return string.IsNullOrEmpty(openRouterContentResult)
-                ? new LlmGenericResponse(llmGenericResponse.Response, false)
+                ? new LlmGenericResponse(llmGenericResponse.response, false)
                 : new LlmGenericResponse(openRouterContentResult, true);
+        }
+
+        public static LlmConfig GetDefaultConfig()
+        {
+            var defaultOpenRouter =
+                new LlmConfig("", "",
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    "qwen/qwen3.6-35b-a3b");
+            return defaultOpenRouter;
         }
     }
 }

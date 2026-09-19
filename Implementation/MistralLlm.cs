@@ -22,7 +22,8 @@ namespace FALLA.Implementation
             serializer.Serialize(writer, value);
         }
 
-        public override List<MistralContent> ReadJson(JsonReader reader, Type objectType, List<MistralContent> existingValue, bool hasExistingValue,
+        public override List<MistralContent> ReadJson(JsonReader reader, Type objectType,
+            List<MistralContent> existingValue, bool hasExistingValue,
             JsonSerializer serializer)
         {
             var token = JToken.Load(reader);
@@ -38,15 +39,18 @@ namespace FALLA.Implementation
                     }
                 };
             }
+
             if (token.Type == JTokenType.Object)
             {
                 var content = token.ToObject<MistralContent>(serializer);
                 return new List<MistralContent> { content };
             }
+
             if (token.Type == JTokenType.Array)
             {
                 return token.ToObject<List<MistralContent>>(serializer);
             }
+
             return new List<MistralContent>();
         }
     }
@@ -112,9 +116,18 @@ namespace FALLA.Implementation
 
     public class MistralLlm : BaseLlm
     {
-        public MistralLlm(string apiKey, string model = "magistral-small-2509") :
-            base(apiKey, "https://api.mistral.ai/v1/chat/completions", model)
+        public MistralLlm(string apiKey, LlmConfig config) : base(apiKey, config)
         {
+            var defaultConfig = GetDefaultConfig();
+            if (string.IsNullOrEmpty(config.apiUrl))
+            {
+                apiUrl = defaultConfig.apiUrl;
+            }
+
+            if (string.IsNullOrEmpty(config.model))
+            {
+                Model = defaultConfig.model;
+            }
         }
 
         public override async Task<LlmGenericResponse> SendRequest(string content)
@@ -134,7 +147,10 @@ namespace FALLA.Implementation
             {
                 var request = new UnityWebRequest(apiUrl, "POST");
                 var jsonBody = JsonConvert.SerializeObject(requestBody);
-                request.SetRequestHeader("Authorization", "Bearer " + apiKey);
+                if (!IsLocal())
+                {
+                    request.SetRequestHeader("Authorization", "Bearer " + apiKey);    
+                }
                 request.SetRequestHeader("Content-Type", "application/json");
                 var bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
                 request.uploadHandler = new UploadHandlerRaw(bodyRaw);
@@ -142,21 +158,21 @@ namespace FALLA.Implementation
                 return request;
             });
 
-            if (!llmGenericResponse.Success)
+            if (!llmGenericResponse.success)
             {
                 return llmGenericResponse;
             }
 
-            var response = JsonConvert.DeserializeObject<MistralResponse>(llmGenericResponse.Response);
+            var response = JsonConvert.DeserializeObject<MistralResponse>(llmGenericResponse.response);
             if (response.choices is not { Count: > 0 } && response.choices[0].Message != null)
             {
-                return new LlmGenericResponse(llmGenericResponse.Response, false);
+                return new LlmGenericResponse(llmGenericResponse.response, false);
             }
 
             var mistralMessage = response.choices[0].Message;
             if (mistralMessage == null)
             {
-                return new LlmGenericResponse(llmGenericResponse.Response, false);
+                return new LlmGenericResponse(llmGenericResponse.response, false);
             }
 
             var mistralContentResult = "";
@@ -181,6 +197,13 @@ namespace FALLA.Implementation
             }
 
             return new LlmGenericResponse(mistralContentResult, true);
+        }
+
+        public static LlmConfig GetDefaultConfig()
+        {
+            var defaultMistral =
+                new LlmConfig("", "", "https://api.mistral.ai/v1/chat/completions", "ministral-3b-2512");
+            return defaultMistral;
         }
     }
 }
