@@ -60,6 +60,7 @@ namespace FALLA.Implementation
                     new { role = "user", content }
                 },
                 stream = false,
+                think = "low",
                 options = new
                 {
                     temperature = Temperature,
