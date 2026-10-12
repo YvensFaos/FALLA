@@ -66,6 +66,7 @@ namespace FALLA.Implementation
                     top_k = TopK,
                     top_p = TopP,
                     num_predict = MaxOutputTokens,
+                    num_ctx = 8192
                 }
             };
 
