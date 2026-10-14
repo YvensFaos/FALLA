@@ -24,8 +24,9 @@ namespace FALLA
                 LlmType.GPT => new GptLlm(apiKey, config),
                 LlmType.OpenRouter => new OpenRouterLlm(apiKey, config),
                 LlmType.Gemma => new GemmaLlm(apiKey, config),
+                LlmType.Ollama => new OllamaLlm(apiKey, config),
+                LlmType.Phi => new PhiLlm(apiKey, config),
                 LlmType.Custom => null, //TODO change
-                LlmType.Phi => new PhiLlm(apiKey, config), //TODO change
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
         }

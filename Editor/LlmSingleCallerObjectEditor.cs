@@ -27,6 +27,7 @@ namespace FALLA.Editor
                     LlmType.Gemma => GemmaLlm.GetDefaultConfig(),
                     LlmType.OpenRouter => OpenRouterLlm.GetDefaultConfig(),
                     LlmType.Phi => PhiLlm.GetDefaultConfig(),
+                    LlmType.Ollama => OllamaLlm.GetDefaultConfig(),
                     LlmType.Custom => new LlmConfig("","","",""),
                     _ => throw new ArgumentOutOfRangeException()
                 };
