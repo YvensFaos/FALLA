@@ -57,11 +57,6 @@ namespace FALLA.Implementation
                 apiUrl = defaultConfig.apiUrl;
             }
 
-            if (string.IsNullOrEmpty(config.model))
-            {
-                Model = defaultConfig.model;
-            }
-
             _version = string.IsNullOrEmpty(config.version) ? defaultConfig.version : config.version;
         }
 
@@ -69,7 +64,7 @@ namespace FALLA.Implementation
         {
             var requestBody = new
             {
-                model = Model,
+                model = config.model,
                 messages = new[]
                 {
                     new { role = "user", content }

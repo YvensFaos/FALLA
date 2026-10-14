@@ -16,18 +16,16 @@ namespace FALLA
     public class LlmListCallerObject : LlmGenericCallerObject
     {
         [SerializeField] private LlmType selectedLlmType;
-        [SerializeField] private string selectedModel;
         [SerializeField] private List<LlmTypeKeyPair> llmTypeKeyPairs;
 
         private void Awake()
         {
             if (initialized) return;
-            LoadModel(selectedLlmType, selectedModel);
-            selectedModel = llm.Model;
+            LoadModel(selectedLlmType);
             InitializeFlags();
         }
 
-        public void LoadModel(LlmType llmType, string model)
+        public void LoadModel(LlmType llmType)
         {
             //Find the pair in the list
             var llmTypeKeyPair = llmTypeKeyPairs.Find(pair => pair.type == llmType);
@@ -42,19 +40,12 @@ namespace FALLA
                     configAPIKeyIdentifier);
 
             var copyConfig = llmConfig.Clone();
-            if (!string.IsNullOrEmpty(model))
-            {
-                copyConfig.model = model;
-            }
-
             if (!llmConfig.local && string.IsNullOrEmpty(keyValue))
             {
                 throw new LlmKeyNotFoundException(configAPIKeyFile, llmType,
                     configAPIKeyIdentifier);
             }
-
             selectedLlmType = llmType;
-            selectedModel = model;
             llm = LLmFactory.CreateLlm(llmType, keyValue, copyConfig);
         }
 
@@ -62,14 +53,12 @@ namespace FALLA
         [ContextMenu("Reload Model")]
         public void ReloadModel()
         {
-            LoadModel(selectedLlmType, selectedModel);
+            LoadModel(selectedLlmType);
         }
-
-        public string GetLlmModel() => selectedModel;
 
         public override string ToString()
         {
-            return $"API-{base.ToString()}|{selectedModel}";
+            return $"API-{base.ToString()}";
         }
     }
 }

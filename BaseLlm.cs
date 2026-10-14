@@ -20,7 +20,6 @@ namespace FALLA
 
         protected delegate UnityWebRequest WebRequestDelegate();
 
-        public string Model { get; set; }
         protected float Temperature { get; set; }
         protected int TopK { get; set; }
         protected int TopP { get; }
@@ -31,11 +30,13 @@ namespace FALLA
 
         private bool _local;
 
+        protected LlmConfig config;
+
         protected BaseLlm(string apiKey, LlmConfig config)
         {
             this.apiKey = apiKey;
+            this.config = config;
             apiUrl = config.apiUrl;
-            Model = config.model;
             Temperature = config.temperature;
             TopK = config.topK;
             TopP = config.topP;

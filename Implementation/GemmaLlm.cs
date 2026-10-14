@@ -75,14 +75,9 @@ namespace FALLA.Implementation
             {
                 apiUrl = defaultConfig.apiUrl;
             }
-
-            if (string.IsNullOrEmpty(config.model))
-            {
-                Model = defaultConfig.model;
-            }
             
             //TODO verify if this step holds in case of a local gemma version
-            _url = $"{apiUrl}{Model}:generateContent?key={apiKey}";
+            _url = $"{apiUrl}{config.model}:generateContent?key={apiKey}";
         }
         
         /// <summary>

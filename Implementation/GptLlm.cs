@@ -48,18 +48,13 @@ namespace FALLA.Implementation
             {
                 apiUrl = defaultConfig.apiUrl;
             }
-
-            if (string.IsNullOrEmpty(config.model))
-            {
-                Model = defaultConfig.model;
-            }
         }
 
         public override async Task<LlmGenericResponse> SendRequest(string content)
         {
             var requestBody = new
             {
-                model = Model,
+                model = config.model,
                 input = new[]
                 {
                     new { role = "user", content = content }

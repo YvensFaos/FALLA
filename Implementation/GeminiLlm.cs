@@ -89,13 +89,8 @@ namespace FALLA.Implementation
             {
                 apiUrl = defaultConfig.apiUrl;
             }
-
-            if (string.IsNullOrEmpty(config.model))
-            {
-                Model = defaultConfig.model;
-            }
             
-            _url = $"{apiUrl}{Model}:generateContent?key={apiKey}";
+            _url = $"{apiUrl}{config.model}:generateContent?key={apiKey}";
         }
 
         /// <summary>
@@ -103,8 +98,6 @@ namespace FALLA.Implementation
         /// </summary>
         /// <param name="content"></param>
         /// <returns></returns>
-        /// <exception cref="NoResponseException"></exception>
-        /// <exception cref="NoCandidateException"></exception>
         public override async Task<LlmGenericResponse> SendRequest(string content)
         {
             var requestData = new GeminiRequest
