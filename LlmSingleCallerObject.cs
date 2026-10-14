@@ -15,7 +15,6 @@ namespace FALLA
     public class LlmSingleCallerObject : LlmGenericCallerObject
     {
         [SerializeField] private LlmType llmType;
-        [SerializeField] private string model;
         [SerializeField] private LlmConfig config;
 
         private void Awake()
@@ -44,7 +43,7 @@ namespace FALLA
         }
 
         public LlmType GetLlmType() => llmType;
-        public string GetModel() => model;
+        public string GetModel() => config.model;
         public LlmConfig GetConfig() => config;
         public void SetConfig(LlmConfig newConfig) => config = newConfig;
     }
