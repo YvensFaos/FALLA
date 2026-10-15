@@ -14,23 +14,11 @@ namespace FALLA.Editor
             var llmSingleCallerObject = (LlmSingleCallerObject)target;
 
             EditorGUILayout.Space(10);
+            // ReSharper disable once InvertIf
             if (GUILayout.Button("Preload Config"))
             {
                 var type = llmSingleCallerObject.GetLlmType();
-                var config = type switch
-                {
-                    LlmType.Gemini => GeminiLlm.GetDefaultConfig(),
-                    LlmType.Mistral => MistralLlm.GetDefaultConfig(),
-                    LlmType.DeepSeek => DeepSeekLlm.GetDefaultConfig(),
-                    LlmType.Claude => ClaudeLlm.GetDefaultConfig(),
-                    LlmType.GPT => GptLlm.GetDefaultConfig(),
-                    LlmType.Gemma => GemmaLlm.GetDefaultConfig(),
-                    LlmType.OpenRouter => OpenRouterLlm.GetDefaultConfig(),
-                    LlmType.Phi => PhiLlm.GetDefaultConfig(),
-                    LlmType.Ollama => OllamaLlm.GetDefaultConfig(),
-                    LlmType.Custom => new LlmConfig("","","",""),
-                    _ => throw new ArgumentOutOfRangeException()
-                };
+                var config = LLmFactory.LoadDefaultConfig(type);
                 llmSingleCallerObject.SetConfig(config);
             }
         }

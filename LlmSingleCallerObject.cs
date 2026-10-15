@@ -43,6 +43,7 @@ namespace FALLA
             llm = LLmFactory.CreateLlm(llmType, keyValue, config);
         }
 
+        public void SetLlmType(LlmType type) => llmType = type;
         public LlmType GetLlmType() => llmType;
         public string GetModel() => config.model;
         public LlmConfig GetConfig() => config;

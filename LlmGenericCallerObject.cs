@@ -14,8 +14,10 @@ namespace FALLA
 {
     public abstract class LlmGenericCallerObject : MonoBehaviour
     {
-        protected BaseLlm llm;
+        [SerializeField]
         protected bool initializeOnAwake = true;
+        
+        protected BaseLlm llm;
         private bool _ready;
         protected bool initialized;
         private LlmGenericResponse _response;
