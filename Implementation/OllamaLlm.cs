@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEngine.Networking;
@@ -15,16 +17,35 @@ namespace FALLA.Implementation
             [JsonProperty("done_reason")] public string doneReason;
             public long created;
             public string model;
+            public OllamaChoices[] choices;
             [JsonProperty("created_at")] public string createdAt;
             public OllamaMessage message;
             [JsonProperty("total_duration")] public long totalDuration;
             [JsonProperty("load_duration")] public long loadDuration;
             [JsonProperty("prompt_eval_count")] public int promptEvalCount;
+
             [JsonProperty("prompt_eval_cached_count")]
             public int promptEvalCachedCount;
+
             [JsonProperty("prompt_eval_duration")] public long promptEvalDuration;
             [JsonProperty("eval_count")] public int evalCount;
             [JsonProperty("eval_duration")] public long evalDuration;
+        }
+
+        [Serializable]
+        internal class OllamaChoices
+        {
+            public int index;
+            public OllamaMessage message;
+            [JsonProperty("finish_reason")] public string finishReason;
+        }
+
+        [Serializable]
+        internal class OllamaUsage
+        {
+            [JsonProperty("prompt_tokens")] public int promptTokens;
+            [JsonProperty("completion_tokens")] public int completionTokens;
+            [JsonProperty("total_tokens")] public int totalTokens;
         }
 
         [Serializable]
@@ -40,17 +61,18 @@ namespace FALLA.Implementation
 
         public override async Task<LlmGenericResponse> SendRequest(string content)
         {
-            var requestBody = new
+            var requestBody = new Dictionary<string, object>
             {
-                model = config.model,
-                messages = new[]
+                { "model", config.model },
                 {
-                    new { role = "user", content }
+                    "messages", new[]
+                    {
+                        new { role = "user", content }
+                    }
                 },
-                stream = false,
-                temperature = Temperature,
-                top_p = TopP,
-                max_tokens = MaxOutputTokens
+                { "temperature", Temperature },
+                { "max_tokens", MaxOutputTokens },
+                { "stream", false }
             };
 
             var llmGenericResponse = await AttemptRequest(() =>
@@ -74,10 +96,20 @@ namespace FALLA.Implementation
             var response = JsonConvert.DeserializeObject<OllamaResponse>(result);
             var messageContent = "";
 
-            ClearThinkingCache();
-            return response?.message == null
-                ? new LlmGenericResponse(messageContent, false)
-                : new LlmGenericResponse(response.message.content, true);
+            var valid = response.message != null || response.choices != null;
+            if (!valid) return new LlmGenericResponse(messageContent, false);
+
+            if (response.message != null)
+            {
+                messageContent = response.message.content;
+            }
+            else if (response.choices != null)
+            {
+                messageContent =
+                    response.choices.Aggregate(messageContent, (current, choice) => current + choice.message.content);
+            }
+
+            return new LlmGenericResponse(messageContent, true);
         }
 
         public static LlmConfig GetDefaultConfig()

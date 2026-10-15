@@ -30,7 +30,7 @@ namespace FALLA
             var configAPIKeyFile = config.apiKeyFile;
             var configAPIKeyIdentifier = config.apiKeyIdentifier;
             var keyValue = config.local
-                ? configAPIKeyFile
+                ? ""
                 : JsonFileReader.GetValueFromValuePairJson(configAPIKeyFile,
                     configAPIKeyIdentifier);
 
