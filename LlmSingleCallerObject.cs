@@ -19,12 +19,13 @@ namespace FALLA
 
         private void Awake()
         {
+            if (!initializeOnAwake) return;
             if (initialized) return;
             LoadModel();
             InitializeFlags();
         }
 
-        private void LoadModel()
+        public void LoadModel()
         {
             var configAPIKeyFile = config.apiKeyFile;
             var configAPIKeyIdentifier = config.apiKeyIdentifier;
